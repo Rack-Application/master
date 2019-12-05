@@ -1,1 +1,1 @@
-# This ia Simple Rack Application that will display local time. 
+# This is a Simple Rack Application that will display local time. 
