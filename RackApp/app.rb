@@ -1,6 +1,8 @@
-require "erb"
-require "rack"
-require "active_support/time"
+# frozen_string_literal: true
+
+require 'erb'
+require 'rack'
+require 'active_support/time'
 
 class MyController
   attr_reader :person, :time
@@ -10,16 +12,16 @@ class MyController
     @time = time
   end
 
-  def file
-    File.read(File.join(__dir__, "template.html.erb"))
+  def file(format)
+    File.read(File.join(__dir__, "template.#{format}.erb"))
   end
 
-  def template
-    ERB.new(file)
+  def template(format)
+    ERB.new(file(format))
   end
 
-  def render
-    template.result(binding)
+  def render(format)
+    template(format).result(binding)
   end
 end
 
@@ -45,27 +47,57 @@ class CountryTime
 end
 
 class Display
-  def initialize(app)
+  def initialize(app = nil)
     @app = app
   end
 
-  def self.call(env)
+  def call(env)
+    @app&.call(env)
     req = Rack::Request.new(env)
-    nickname = req.params["nickname"]
-    tz = req.params["tz"]
-    if req.path.match("/users") && nickname && tz
-      user = User.new("#{nickname}")
-      time = CountryTime.new("#{tz}")
+    format = request_format(env)
+    puts env.inspect
+    nickname = req.params['nickname']
+    tz = req.params['tz']
+    f = req.params['f']
+    if req.path.match('/users') && nickname && tz && f
+      user = User.new(nickname.to_s)
+      time = CountryTime.new(tz.to_s)
       view = MyController.new(user, time)
-      ["200", { "Content-Type" => "text/html" }, [view.render]]
+      ['200', { 'Content-Type' => response_format(format) }, [view.render(f)]]
     else
       [
-        "404",
-        { "Content-Type" => "text/html" },
-        ["<html><body><b><em>404 Page not found</em></b></body></html>"],
+        '404',
+        { 'Content-Type' => 'text/html' },
+        ['<html><body><b><em>404 Page not found</em></b></body></html>']
       ]
+    end
+  end
+
+  def request_format(env)
+    format = env['HTTP_ACCEPT'].split(',').first.to_s
+    case format
+    when /json/
+      :json
+    when /html/
+      :html
+    when /xml/
+      :xml
+    else
+      raise ClientError, "Format not accepted: #{format}"
+    end
+  end
+
+  def response_format(format)
+    case format
+    when :html
+      'text/html'
+    when :json
+      'application/json'
+    when :xml
+      'application/xml'
     end
   end
 end
 
-Rack::Server.start(app: Display).new
+Rack::Server.start(app: Display.new).new
+
