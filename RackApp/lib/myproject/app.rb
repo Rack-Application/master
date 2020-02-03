@@ -28,9 +28,9 @@ class View
   end
 
   def file(name, format)
-    file_path = File.expand_path(File.join(__dir__, 'templates', "#{name}.#{format}.erb"), __FILE__)
+    file_path = File.expand_path(File.join('../../..', 'templates', "#{name}.#{format}.erb"), __FILE__)
     if File.exist?(file_path)
-      File.read(File.join(__dir__, 'templates', "#{name}.#{format}.erb"))
+      File.read(file_path)
     else
       'ERROR:The file doesnot exist'
     end
@@ -65,6 +65,7 @@ class MyApp
   def call(env)
     @app&.call(env)
     req = Rack::Request.new(env)
+    puts env.inspect
     timezone = req.params['timezone']
     format = req.params['format']
     nickname_match = req.path.match('/users/nickname/(\w+)')
@@ -94,5 +95,3 @@ class MyApp
     end
   end
 end
-
-Rack::Server.start(app: MyApp.new).new
