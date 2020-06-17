@@ -65,7 +65,6 @@ class MyApp
   def call(env)
     @app&.call(env)
     req = Rack::Request.new(env)
-    puts env.inspect
     timezone = req.params['timezone']
     format = req.params['format']
     nickname_match = req.path.match('/users/nickname/(\w+)')

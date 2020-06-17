@@ -13,20 +13,20 @@ class TestApp < TestBase
   end
 
   def test_jsonoutput
-    puts Time.zone = 'UTC'
-    puts @timezone = Time.zone.now
+    Time.zone = 'UTC'
+    @timezone = Time.zone.now
     data = { 'name' => 'hema', 'time' => @timezone.to_s }
     json_data = JSON.parse(data.to_json).to_s
     get '/users/nickname/hema?timezone=UTC&format=json'
-    puts response = JSON.parse(last_response.body).to_s
+    response = JSON.parse(last_response.body).to_s
     assert_equal response, json_data
   end
 
   def test_xmloutput
-    puts Time.zone = 'UTC'
-    puts @timezone = Time.zone.now
+    Time.zone = 'UTC'
+    @timezone = Time.zone.now
     data = { 'person' => 'hema', 'time' => @timezone.to_s }
-    puts data1 = data.to_xml(root: 'output')
+    data1 = data.to_xml(root: 'output')
     get '/users/nickname/hema?timezone=UTC&format=xml'
     assert_equal last_response.body, data1
   end
@@ -34,7 +34,7 @@ class TestApp < TestBase
   def test_htmloutput
     personname = 'hema'
     Time.zone = 'UTC'
-    puts @timezone = Time.zone.now
+    @timezone = Time.zone.now
     data = <<-HTML
         <html>
             <head>
